@@ -3,6 +3,8 @@ package org.academy.springbootessentials.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.academy.springbootessentials.domain.Book;
+import org.academy.springbootessentials.requests.BookPostRequestBody;
+import org.academy.springbootessentials.requests.BookPutRequestBody;
 import org.academy.springbootessentials.service.BookService;
 import org.academy.springbootessentials.util.DateUtil;
 import org.springframework.http.HttpStatus;
@@ -32,8 +34,8 @@ public class BookController {
     }
 
     @PostMapping
-    public ResponseEntity<Book> save(@RequestBody Book book){
-     return new ResponseEntity<>(bookService.save(book), HttpStatus.CREATED );
+    public ResponseEntity<Book> save(@RequestBody BookPostRequestBody bookPostRequestBody){
+     return new ResponseEntity<>(bookService.save(bookPostRequestBody), HttpStatus.CREATED );
     }
 
     @DeleteMapping(path = "/{id}")
@@ -43,8 +45,8 @@ public class BookController {
     }
 
     @PutMapping
-    public ResponseEntity<Book> replace (@RequestBody Book book) {
-        bookService.replace(book);
+    public ResponseEntity<Book> replace (@RequestBody BookPutRequestBody bookPutRequestBody) {
+        bookService.replace(bookPutRequestBody);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

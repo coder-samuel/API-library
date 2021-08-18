@@ -1,9 +1,11 @@
 package org.academy.springbootessentials.repository;
 
 import org.academy.springbootessentials.domain.Book;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.List;
 
-public interface BookRepository {
-    List<Book> listAll();
+@Repository
+public interface BookRepository extends JpaRepository<Book, Long> {
+
 }

@@ -1,7 +1,10 @@
 package org.academy.springbootessentials.service;
 
+import lombok.RequiredArgsConstructor;
 import org.academy.springbootessentials.domain.Book;
 import org.academy.springbootessentials.repository.BookRepository;
+import org.academy.springbootessentials.requests.BookPostRequestBody;
+import org.academy.springbootessentials.requests.BookPutRequestBody;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -11,40 +14,41 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
+@RequiredArgsConstructor
 public class BookService {
-    //private final BookRepository bookRepository;
-    private static List<Book> books;
+    private final BookRepository bookRepository;
 
-    static {
-        books = new ArrayList<>(List.of(new Book(1L, "The Chronicles of Narnia"), new Book(2L, "The Spiderwick Chronicles")));
-    }
 
     public List<Book> listAll()
     {
-        return books;
+
+        return bookRepository.findAll();
     }
 
-    public Book findById(long id)
+    public Book findByIdOrThrowBadRequestException(long id)
     {
-        return books.stream()
-                .filter(book -> book.getId().equals(id))
-                .findFirst()
+        return bookRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Book not found"));
     }
 
-    public Book save(Book book) {
-        book.setId(ThreadLocalRandom.current().nextLong(1, 1000));
-        books.add(book);
-        return book;
+
+
+    public Book save(BookPostRequestBody bookPostRequestBody) {
+        return bookRepository.save(Book.builder().title(bookPostRequestBody.getTitle()).build());
     }
 
     public void delete(long id) {
-        books.remove(findById(id));
+        bookRepository.delete(findByIdOrThrowBadRequestException(id));
     }
 
-    public void replace(Book book) {
-    delete(book.getId());
-    books.add(book);
+    public void replace(BookPutRequestBody bookPutRequestBody) {
+        Book savedBook = findByIdOrThrowBadRequestException(bookPutRequestBody.getId());
+        Book book = Book.builder()
+                .id(savedBook.getId())
+                .title(bookPutRequestBody.getTitle())
+                .build();
+
+        bookRepository.save(book);
     }
 }
 
