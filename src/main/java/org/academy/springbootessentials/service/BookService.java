@@ -2,6 +2,7 @@ package org.academy.springbootessentials.service;
 
 import lombok.RequiredArgsConstructor;
 import org.academy.springbootessentials.domain.Book;
+import org.academy.springbootessentials.mapper.BookMapper;
 import org.academy.springbootessentials.repository.BookRepository;
 import org.academy.springbootessentials.requests.BookPostRequestBody;
 import org.academy.springbootessentials.requests.BookPutRequestBody;
@@ -34,7 +35,7 @@ public class BookService {
 
 
     public Book save(BookPostRequestBody bookPostRequestBody) {
-        return bookRepository.save(Book.builder().title(bookPostRequestBody.getTitle()).build());
+        return bookRepository.save(BookMapper.INSTANCE.toBook(bookPostRequestBody));
     }
 
     public void delete(long id) {
@@ -43,10 +44,8 @@ public class BookService {
 
     public void replace(BookPutRequestBody bookPutRequestBody) {
         Book savedBook = findByIdOrThrowBadRequestException(bookPutRequestBody.getId());
-        Book book = Book.builder()
-                .id(savedBook.getId())
-                .title(bookPutRequestBody.getTitle())
-                .build();
+        Book book = BookMapper.INSTANCE.toBook(bookPutRequestBody);
+        book.setId(savedBook.getId());
 
         bookRepository.save(book);
     }

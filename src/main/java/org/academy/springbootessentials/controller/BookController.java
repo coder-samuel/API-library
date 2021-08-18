@@ -30,7 +30,7 @@ public class BookController {
 
     @GetMapping(path = "/{id}")
     public ResponseEntity <Book> findById(@PathVariable long id){
-        return ResponseEntity.ok( bookService.findById(id));
+        return ResponseEntity.ok( bookService.findByIdOrThrowBadRequestException(id));
     }
 
     @PostMapping
