@@ -2,6 +2,7 @@ package org.academy.springbootessentials.service;
 
 import lombok.RequiredArgsConstructor;
 import org.academy.springbootessentials.domain.Book;
+import org.academy.springbootessentials.exception.BadRequestException;
 import org.academy.springbootessentials.mapper.BookMapper;
 import org.academy.springbootessentials.repository.BookRepository;
 import org.academy.springbootessentials.requests.BookPostRequestBody;
@@ -22,14 +23,18 @@ public class BookService {
 
     public List<Book> listAll()
     {
-
         return bookRepository.findAll();
+    }
+
+    public List<Book> findByTitle(String title)
+    {
+        return bookRepository.findByTitle(title);
     }
 
     public Book findByIdOrThrowBadRequestException(long id)
     {
         return bookRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Book not found"));
+                .orElseThrow(() -> new BadRequestException("Book not found"));
     }
 
 

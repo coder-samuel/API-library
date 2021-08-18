@@ -33,6 +33,11 @@ public class BookController {
         return ResponseEntity.ok( bookService.findByIdOrThrowBadRequestException(id));
     }
 
+    @GetMapping(path = "/{title}")
+    public ResponseEntity<List<Book>> findByTitle(@RequestParam String title){
+        return ResponseEntity.ok( bookService.findByTitle(title));
+    }
+
     @PostMapping
     public ResponseEntity<Book> save(@RequestBody BookPostRequestBody bookPostRequestBody){
      return new ResponseEntity<>(bookService.save(bookPostRequestBody), HttpStatus.CREATED );
