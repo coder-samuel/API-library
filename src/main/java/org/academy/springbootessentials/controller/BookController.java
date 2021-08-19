@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -33,13 +34,13 @@ public class BookController {
         return ResponseEntity.ok( bookService.findByIdOrThrowBadRequestException(id));
     }
 
-    @GetMapping(path = "/{title}")
+    @GetMapping(path = "/title")
     public ResponseEntity<List<Book>> findByTitle(@RequestParam String title){
         return ResponseEntity.ok( bookService.findByTitle(title));
     }
 
     @PostMapping
-    public ResponseEntity<Book> save(@RequestBody BookPostRequestBody bookPostRequestBody){
+    public ResponseEntity<Book> save(@RequestBody @Valid BookPostRequestBody bookPostRequestBody){
      return new ResponseEntity<>(bookService.save(bookPostRequestBody), HttpStatus.CREATED );
     }
 
