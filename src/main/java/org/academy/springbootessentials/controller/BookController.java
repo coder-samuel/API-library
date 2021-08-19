@@ -7,6 +7,8 @@ import org.academy.springbootessentials.requests.BookPostRequestBody;
 import org.academy.springbootessentials.requests.BookPutRequestBody;
 import org.academy.springbootessentials.service.BookService;
 import org.academy.springbootessentials.util.DateUtil;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,9 +26,9 @@ public class BookController {
     private final BookService bookService;
 
     @GetMapping
-    public ResponseEntity <List<Book> >list(){
+    public ResponseEntity <Page<Book>>list(Pageable pageable){
         log.info(dateUtil.formatLocalDateTimeToDatabaseStyle(LocalDateTime.now()));
-        return ResponseEntity.ok( bookService.listAll());
+        return ResponseEntity.ok( bookService.listAll(pageable));
     }
 
     @GetMapping(path = "/{id}")

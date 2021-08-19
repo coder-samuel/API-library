@@ -7,6 +7,8 @@ import org.academy.springbootessentials.mapper.BookMapper;
 import org.academy.springbootessentials.repository.BookRepository;
 import org.academy.springbootessentials.requests.BookPostRequestBody;
 import org.academy.springbootessentials.requests.BookPutRequestBody;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,9 +24,9 @@ public class BookService {
     private final BookRepository bookRepository;
 
 
-    public List<Book> listAll()
+    public Page<Book> listAll(Pageable pageable)
     {
-        return bookRepository.findAll();
+        return bookRepository.findAll(pageable);
     }
 
     public List<Book> findByTitle(String title)
