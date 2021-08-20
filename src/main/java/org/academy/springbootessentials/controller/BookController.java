@@ -22,13 +22,16 @@ import java.util.List;
 @Log4j2
 @RequiredArgsConstructor
 public class BookController {
-    private final DateUtil dateUtil;
     private final BookService bookService;
 
     @GetMapping
     public ResponseEntity <Page<Book>>list(Pageable pageable){
-        log.info(dateUtil.formatLocalDateTimeToDatabaseStyle(LocalDateTime.now()));
         return ResponseEntity.ok( bookService.listAll(pageable));
+    }
+
+    @GetMapping(path = "/all")
+    public ResponseEntity<List<Book>> listAll() {
+        return ResponseEntity.ok(bookService.listAllNonPageable());
     }
 
     @GetMapping(path = "/{id}")
@@ -53,7 +56,7 @@ public class BookController {
     }
 
     @PutMapping
-    public ResponseEntity<Book> replace (@RequestBody BookPutRequestBody bookPutRequestBody) {
+    public ResponseEntity<Void> replace (@RequestBody BookPutRequestBody bookPutRequestBody) {
         bookService.replace(bookPutRequestBody);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

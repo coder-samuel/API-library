@@ -1,9 +1,11 @@
-package org.academy.springbootessentials.controller;
+package org.academy.springbootessentials.service;
 
+import org.academy.springbootessentials.controller.BookController;
 import org.academy.springbootessentials.domain.Book;
+import org.academy.springbootessentials.exception.BadRequestException;
+import org.academy.springbootessentials.repository.BookRepository;
 import org.academy.springbootessentials.requests.BookPostRequestBody;
 import org.academy.springbootessentials.requests.BookPutRequestBody;
-import org.academy.springbootessentials.service.BookService;
 import org.academy.springbootessentials.util.BookCreator;
 import org.academy.springbootessentials.util.BookPostRequestBodyCreator;
 import org.academy.springbootessentials.util.BookPutRequestBodyCreator;
@@ -18,51 +20,52 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import javax.validation.ConstraintViolationException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-
 @ExtendWith(SpringExtension.class)
-class BookControllerTest {
+class BookServiceTest {
     @InjectMocks
-    private BookController bookController;
+    private BookService bookService;
 
     @Mock
-    private BookService bookServiceMock;
+    private BookRepository bookRepositoryMock;
 
     @BeforeEach
     void setUp(){
         PageImpl<Book> bookPage = new PageImpl<>(List.of(BookCreator.createValidBook()));
-        BDDMockito.when(bookServiceMock.listAll(ArgumentMatchers.any()))
+        BDDMockito.when(bookRepositoryMock.findAll(ArgumentMatchers.any(PageRequest.class)))
                 .thenReturn(bookPage);
 
-        BDDMockito.when(bookServiceMock.listAllNonPageable())
+        BDDMockito.when(bookRepositoryMock.findAll())
                 .thenReturn(List.of(BookCreator.createValidBook()));
 
-        BDDMockito.when(bookServiceMock.findByIdOrThrowBadRequestException(ArgumentMatchers.anyLong()))
-                .thenReturn(BookCreator.createValidBook());
+        BDDMockito.when(bookRepositoryMock.findById(ArgumentMatchers.anyLong()))
+                .thenReturn(Optional.of(BookCreator.createValidBook()));
 
-        BDDMockito.when(bookServiceMock.findByTitle(ArgumentMatchers.anyString()))
+        BDDMockito.when(bookRepositoryMock.findByTitle(ArgumentMatchers.anyString()))
                 .thenReturn(List.of(BookCreator.createValidBook()));
 
-        BDDMockito.when(bookServiceMock.save(ArgumentMatchers.any(BookPostRequestBody.class)))
+        BDDMockito.when(bookRepositoryMock.save(ArgumentMatchers.any(Book.class)))
                 .thenReturn(BookCreator.createValidBook());
 
-        BDDMockito.doNothing().when(bookServiceMock).replace(ArgumentMatchers.any(BookPutRequestBody.class));
 
-        BDDMockito.doNothing().when(bookServiceMock).delete(ArgumentMatchers.anyLong());
+        BDDMockito.doNothing().when(bookRepositoryMock).delete(ArgumentMatchers.any(Book.class));
     }
     @Test
-    @DisplayName("List returns list of books inside page object when successful")
-    void list_ReturnsListOfBooksInsidePageObject_WhenSuccessful(){
+    @DisplayName("List all returns list of books inside page object when successful")
+    void listAll_ReturnsListOfBooksInsidePageObject_WhenSuccessful(){
         String expectedTitle = BookCreator.createValidBook().getTitle();
 
-        Page<Book> bookPage = bookController.list(null).getBody();
+        Page<Book> bookPage = bookService.listAll(PageRequest.of(1,1));
 
         Assertions.assertThat(bookPage).isNotNull();
 
@@ -74,11 +77,11 @@ class BookControllerTest {
     }
 
     @Test
-    @DisplayName("listAll returns list of book when successful")
-    void listAll_ReturnsListOfBook_WhenSuccessful(){
+    @DisplayName("list All Non Pageable returns list of book when successful")
+    void listAllNonPageable_ReturnsListOfBook_WhenSuccessful(){
         String expectedTitle = BookCreator.createValidBook().getTitle();
 
-        List<Book> books = bookController.listAll().getBody();
+        List<Book> books = bookService.listAllNonPageable();
 
         Assertions.assertThat(books)
                 .isNotNull()
@@ -88,11 +91,11 @@ class BookControllerTest {
         Assertions.assertThat(books.get(0).getTitle()).isEqualTo(expectedTitle);
     }
     @Test
-    @DisplayName("findById returns book when successful")
-    void findById_ReturnsBook_WhenSuccessful(){
+    @DisplayName("find By Id Or Throw Bad Request Exception returns book when successful")
+    void findByIdOrThrowBadRequestException_ReturnsBook_WhenSuccessful(){
         Long expectedId = BookCreator.createValidBook().getId();
 
-        Book book = bookController.findById(1).getBody();
+        Book book = bookService.findByIdOrThrowBadRequestException(1);
 
         Assertions.assertThat(book).isNotNull();
 
@@ -100,11 +103,23 @@ class BookControllerTest {
     }
 
     @Test
+    @DisplayName("findByIdOrThrowBadRequestException throws BadRequestException when book in not found")
+    void findByIdOrThrowBadRequestException_ThrowsBadRequestException_WhenBookIssNotFound(){
+
+        BDDMockito.when(bookRepositoryMock.findById(ArgumentMatchers.anyLong()))
+                .thenReturn(Optional.empty());
+
+        Assertions.assertThatExceptionOfType(BadRequestException.class)
+                .isThrownBy(() -> bookService.findByIdOrThrowBadRequestException(1));
+
+    }
+
+    @Test
     @DisplayName("findBytitle returns a list of book when successful")
     void findByTitle_ReturnsListOfBook_WhenSuccessful(){
         String expectedTitle = BookCreator.createValidBook().getTitle();
 
-        List<Book> books = bookController.findByTitle("book").getBody();
+        List<Book> books = bookService.findByTitle("book");
 
         Assertions.assertThat(books)
                 .isNotNull()
@@ -117,10 +132,10 @@ class BookControllerTest {
     @Test
     @DisplayName("findByTitle returns an empty list of book when book is not found")
     void findByTitle_ReturnsEmptyListOfBook_WhenBookIsNotFound(){
-        BDDMockito.when(bookServiceMock.findByTitle(ArgumentMatchers.anyString()))
+        BDDMockito.when(bookRepositoryMock.findByTitle(ArgumentMatchers.anyString()))
                 .thenReturn(Collections.emptyList());
 
-        List<Book> books = bookController.findByTitle("book").getBody();
+        List<Book> books = bookService.findByTitle("book");
 
         Assertions.assertThat(books)
                 .isNotNull()
@@ -132,7 +147,7 @@ class BookControllerTest {
     @DisplayName("save returns book when successful")
     void save_ReturnsBook_WhenSuccessful(){
 
-        Book book = bookController.save(BookPostRequestBodyCreator.createBookPostRequestBody()).getBody();
+        Book book = bookService.save(BookPostRequestBodyCreator.createBookPostRequestBody());
 
         Assertions.assertThat(book).isNotNull().isEqualTo(BookCreator.createValidBook());
 
@@ -142,27 +157,18 @@ class BookControllerTest {
     @DisplayName("replace updates book when successful")
     void replace_UpdatesBook_WhenSuccessful(){
 
-        Assertions.assertThatCode(() ->bookController.replace(BookPutRequestBodyCreator.createBookPutRequestBody()))
+        Assertions.assertThatCode(() ->bookService.replace(BookPutRequestBodyCreator.createBookPutRequestBody()))
                 .doesNotThrowAnyException();
 
-        ResponseEntity<Void> entity = bookController.replace(BookPutRequestBodyCreator.createBookPutRequestBody());
-        Assertions.assertThat(entity).isNotNull();
-
-        Assertions.assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
     }
 
     @Test
     @DisplayName("delete removes book when successful")
     void delete_RemovesBook_WhenSuccessful(){
 
-        Assertions.assertThatCode(() ->bookController.delete(1))
+        Assertions.assertThatCode(() ->bookService.delete(1))
                 .doesNotThrowAnyException();
 
-        ResponseEntity<Void> entity = bookController.delete(1);
-
-        Assertions.assertThat(entity).isNotNull();
-
-        Assertions.assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
     }
-}
 
+}

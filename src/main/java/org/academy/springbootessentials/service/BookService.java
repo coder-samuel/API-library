@@ -29,6 +29,10 @@ public class BookService {
         return bookRepository.findAll(pageable);
     }
 
+    public List<Book> listAllNonPageable() {
+        return bookRepository.findAll();
+    }
+
     public List<Book> findByTitle(String title)
     {
         return bookRepository.findByTitle(title);
