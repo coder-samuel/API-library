@@ -2,6 +2,7 @@ package org.academy.springbootessentials.repository;
 
 import lombok.extern.log4j.Log4j2;
 import org.academy.springbootessentials.domain.Book;
+import org.academy.springbootessentials.util.BookCreator;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,7 +27,7 @@ class BookRepositoryTest {
     @DisplayName("Save persists book when Successful")
     void save_PersistBook_WhenSuccessful(){
 
-        Book bookToBeSave = createBook();
+        Book bookToBeSave = BookCreator.createBookToBeSaved();
 
         Book bookSaved = this.bookRepository.save(bookToBeSave);
 
@@ -40,7 +41,7 @@ class BookRepositoryTest {
     @Test
     @DisplayName("Save update book when Successful")
     void save_UpdateBook_WhenSuccessful(){
-        Book bookToBeSave = createBook();
+        Book bookToBeSave = BookCreator.createBookToBeSaved();
 
         Book bookSaved = this.bookRepository.save(bookToBeSave);
 
@@ -58,7 +59,7 @@ class BookRepositoryTest {
     @Test
     @DisplayName("Delete removes book when Successful")
     void delete_RemovesBook_WhenSuccessful(){
-        Book bookToBeSaved = createBook();
+        Book bookToBeSaved = BookCreator.createBookToBeSaved();
 
         Book bookSaved = this.bookRepository.save(bookToBeSaved);
 
@@ -73,7 +74,7 @@ class BookRepositoryTest {
     @Test
     @DisplayName("Find By Title returns list of book when Successful")
     void findByTitle_ReturnsListOfBook_WhenSuccessful(){
-        Book bookToBeSaved = createBook();
+        Book bookToBeSaved = BookCreator.createBookToBeSaved();
 
         Book bookSaved = this.bookRepository.save(bookToBeSaved);
 
@@ -107,12 +108,5 @@ class BookRepositoryTest {
         Assertions.assertThatExceptionOfType(ConstraintViolationException.class)
                 .isThrownBy(() -> this.bookRepository.save(book))
                 .withMessageContaining("The book title cannot be empty");
-    }
-
-
-    private Book createBook(){
-        return Book.builder()
-                .title("The Chronicles of Narnia")
-                .build();
     }
 }
